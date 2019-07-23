@@ -1,0 +1,201 @@
+/* Import fonts FIRST, in the root stylesheet (don't use link tag for react + webpack, just do it here) */
+/* The 100,300,400... numbers are font weights (how bold it is) */
+@import url("https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900");
+
+/*
+COLORS:
+
+Light green: #7ed56f
+Medium green: #55c57a
+Dark green: #28b485
+
+*/
+
+/* Set every element's (* is universal selector) margin and padding to 0 as default (start clean) since the browser adds annoying margins and paddings to elements by default */
+
+/* List classes based on the natural heirachy of the html elements */
+
+* {
+    margin: 0;
+    padding: 0;
+    /* Prevent total width or height of boxes from including margins or padding (we want raw height/width) */
+    box-sizing: border-box;
+}
+
+body {
+    /* FONT DEFINITIONS (to be inhereted by everything)*/
+    /* Set fonts in body and not universal selector because fonts are inhereted by all the child elements of the body, which is more efficient than putting it in the universal selector */
+    font-family: "Lato", sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.7; /* Line height of font is 1.7X bigger than the previously defined line height */
+    color: #777;
+    /* Padding to create white background around entire webpage (not inhereted) (makes webpage look like a card) */
+    padding: 30px;
+}
+
+.header {
+    height: 95vh;
+    /* 2 background images, one for the gradient (on top of the actual image), and one for the image underneath, specified in order */
+    /* linear-gradient creates a linear gradient from the first color to the second, we can also prepend an argument saying which direction the gradient should go -- change opacity of the colors by sliding the opacity bar to make the actual image visible */
+    background-image: linear-gradient(to right bottom, #7ed56fe2, #28b485e2), url('../img/hero.jpg');
+    /* Make bg image cover the entire container */
+    background-size: cover;
+    /* Place the background against the top of the container so that when we resize the viewport the top of the image stays at the top of the container */
+    background-position: top;
+    
+    /* USE CLIP-PATH TO DRAW POLYGONS: USE https://bennettfeely.com/clippy/ FOR HELP */
+    /* Clip out part of the background image(s) to create a straight edge by specifying a polygon using a series of clockwise points for which the image will still be visible (100% means the full width of the container in either the x or y direction, starting with the topleft corner) 
+        - PLAY AROUND WITH COORDINATES IN DEV TOOLS TO FIND THE RIGHT POLYGON!! */
+    clip-path: polygon(0 0, 100% 0, 100% 80vh, 0 100%);
+
+    /* Position this box relative to its normal position - we need this so that logo-box can use this as a reference (since it's position is absolute) to position itself */
+    position: relative;
+}
+
+/* Use the logo-box to POSITION the logo */
+.logo-box {
+    /* Position this box relative to its parent container */
+    position: absolute;
+    /* Top, left, right, bottom places the image at the right place */
+    top: 40px;
+    left: 40px;
+}
+
+/* Use the logo to SIZE the logo */
+.logo {
+    /* Only set the height of the logo, let the browser automatically specify the width accordingly */
+    height: 35px;
+}
+
+.text-box {
+    /* We want to center this box within the header */
+    position: absolute;
+    /* Top and left are relative to the upper left corner of the box, so this will put the upper left corner of the box exactly in the center of the container, center of the box itself not actually centered */
+    top: 40%;
+    left: 50%;
+    /* Translate the box left 50% of its OWN width and up 50% of its OWN height so that its center is actually at the center of the container (readjust after top and left properties) */
+    transform: translate(-50%, -50%);
+    /* Center the button since it's just an inline-block of text */
+    text-align: center;
+}
+
+.heading-primary {
+    /* Make all landing heading text to be white, regardless of if it's main or subtext */
+    color: #fff;
+    text-transform: uppercase;
+
+    /* We're this entire heading-primary element moves a little bit during the animation of its children ( a little shaky) - nobody actually knows why this is, but if we hide the back part (the backface) of the element from the user it turns out that the shaking goes away - nobody knows why this fixes it either but it just works - make sure you put this onn the right element that's shaking */
+    backface-visibility: hidden;
+    /* Make space between the text and the button */
+    margin-bottom: 60px;
+}
+
+.heading-primary-main {
+    /* Block elements occupy the entire width of their parent elements and create line breaks before and after them, unlike inline elements which just cram themselves next to each other on the same line - so block elements are perfect for heading-main and heading-sub since we need them on separate lines */
+    display: block;
+    /* Font options, some of which override default h1 options */
+    font-size: 60px;
+    /* Note that we only have access to the font weights we loaded: 100, 300, 400,... */
+    font-weight: 400;
+    letter-spacing: 35px;
+
+    /* Apply @keyframe animation named moveInLeft to this class and set duration (there are many other animation properties you can find on MDN for your purpose) */
+    animation-name: moveInLeft;
+    animation-duration: 1s;
+    /* Make the auto-animation non-linear by adjusting the timing */
+    animation-timing-function: ease-out;
+}
+
+.heading-primary-sub {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 17.4px;
+
+    /* Shortened property that includes all of the above animation properties (CSS will figure out what each one means) */
+    animation: moveInRight 1s ease-out;
+}
+
+/* Create named animation with keyframes @ rule */
+
+/* Note: There are 2 ways to do CSS animations: @keyframes, and the transition property - only use @keyframes when necessary (when we need something very specific, maybe at different timesteps) */
+
+/* It's best to only try to animate two different properties at once for performance reasons - here we're animating opacity (creates fade in) and transform (lets the text move in) */
+@keyframes moveInLeft {
+    /* Specify the state we want at each  timestep (0% is start, 100% is end) and it will auto animate it linearly using those states and the animation-duration specified in the class that uses it */
+    0% {
+        /* Let it fade in */
+        opacity: 0;
+        /* Animate it in the x direction relative to the class's specified position in the selectors - we start with negative so we can move in from the left */
+        transform: translateX(-100px)
+    }
+
+    80% {
+        /* Let it move too far to the left and then go back to original state at 100% to animate bouncing effect */
+        transform: translateX(10px);
+    }
+
+    100% {
+        opacity: 1;
+        /* translate(0) lets the final state look exactly as the class looks by default */
+        transform: translate(0);
+    }
+}
+
+@keyframes moveInRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100px)
+    }
+
+    80% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(0);
+    }
+}
+
+/* :link is a link pseudo-class, which is a special state of a selector (eg. :hover) - in this case, :link is the state of the btn class (pseudo-class) when the btn class belongs to an <a> element */
+/* Everything below applies to both btn:link and btn:visited, ensuring it's always the same */
+.btn:link,
+.btn:visited {
+    text-transform: uppercase;
+    text-decoration: none; /* Remove all underlining and blueing of links */
+    /* Padding is needed for buttons (especially <a> buttons) because or else the background color will just be applied as a highlight over some text - the padding creates the fatness of the button */
+    /* We use padding because it's inside the border of the box, so it lets us increase the size of the background, whereas margin is outside the border and won't affect the size (only position) */
+    padding: 15px 40px;
+    /* ALWAYS do this when we want to give padding or height/width to elements because it prevents it from being an inline element (basically text) - this lets the box model treat it as a regular block element (so it takes up new lines rather than overlaps with things above or below it) - but since it's inline-block and not block, it doesn't take up its own width, it lets other blocks coexist on that width */
+    display: inline-block;
+    /* Round out the edges */
+    border-radius: 100px;
+    /* Specifies which properties we enable to be animated (if we're not sure, just put all) */
+    /* Transition property much be on the initial state and controls the way each of the transform properties are animated (instead of being instant, we can delay them) */
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    /* Make button move up on hover (the y axis increases downward, so moving up means moving -vely) - the translation is in relation to the initial state (btn:link) */
+    transform: translateY(-3px);
+    /* Add a shadow when we hover so it looks like the button is moving up - the arguments are:
+    x-direction, y-direction, blur, color (rgba, where the last value is opacity, allowing us to make it more subtle (not a giant black thing) */
+    /* We want more blur here because the button should be at the highest point - we don't want horizontal shadows since the button is moving up */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* When clicked */
+.btn:active {
+    /* Make button move up on click - translation is also in relation to INITIAL state, NOT hover state, and since we made hover -3px, once we hover and then click, we'd go down to -1px, so the button gets pressed DOWN since we move from -3px relative to initial state to -1px relative to initial state */
+    transform: translateY(-1px);
+    /* Less y-direction shadow and less blur here since button is closer */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-white {
+    background-color: #fff;
+    color: #777;
+
+}
