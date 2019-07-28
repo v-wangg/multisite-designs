@@ -1,9 +1,11 @@
 import React from 'react';
 
 // Import any components AFTER the main style import because other stylesheets from other components need to be imported sequentially
-import './css/style.css';
+import './sass/main.scss';
 
 import logo from './img/logo-white.png';
+
+// SEE CSS FOLDER FIRST FOR REASONING BEHIND STYLING DECISIONS, THEN LOOK AT SASS FOR SASS SPECIFIC COMMENTS
 
 function App() {
   return (

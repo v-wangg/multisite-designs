@@ -216,7 +216,9 @@ The Website rendering phase
 
                 When this happens, text and inline elements will wrap around the floated element
 
-                The container of the floated element will also NOT adjust its height to the element, which can be problematic - we can fix this using clear fixes
+                The container of the floated element will also NOT adjust its height to fit the element, which gives rise to a lot of problems - we can fix this using clearfixes (google it)
+
+                    One of the problems is that if two floated elements in a container are stacked next to each other, then that container will collapse to have no width or height because it essentially has no content anymore - its content is in a different positioning scheme
 
             Absolute positioning (position: absolute OR fixed):
 
