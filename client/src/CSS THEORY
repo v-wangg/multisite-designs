@@ -1,0 +1,235 @@
+Overview of what happens to CSS when we load up a webpage
+
+    When the browser starts to load the initial html file, it begins to parse the html line by line
+
+    While parsing the html, the browser builds the DOM, which describes the entire web document as a tree, where nested elements are children of other ones
+
+        This is where the entire decoded html code is stored
+
+    As the browser parses the html, it also finds the CSS stylesheets being imported or included in the document head, and beigns to load them as well
+
+        The CSS is also parsed, which takes two main steps: resolving conflicting CSS declarations through cascasde, and processing final CSS values (such as converting a margin defined in % to actual px based on the viewport)
+
+        Thus, %tage dimensions for certain elements based on the user's device can only be calculated in the parsing phase of the CSS
+
+    Once the CSS also parsed, this CSS is stored in the CSS object model (CSSOM), which is also a tree-like structure
+
+    Now that the HTML and CSS are parsed and stored, the browser then uses both the DOM and CSSOM to form the Render tree, which is used to render the page
+
+    To render the page, the browser uses the Visual Formatting Model, which is an algorithm that uses the box model, floats, and positioning to calculate the best way to render the DOM and CSSOM onto the screen
+
+    Once the Visual Formatting Model has done its work, the website is finally rendered to the screen
+
+The CSS parsing phase
+
+    Resolving conflicting CSS definitions
+
+        We do this with a cascade, which is the process of combining different stylesheets and resolving conflicts between different CSS rules and declaration when more than one rule applies to a certain elements
+
+        CSS can also come from different sources: the CSS we write is called author declarations, but there are also user declarations which happen when the user changes the default font size of their browser for example, and there are also default browser declarations called user agent CSS
+        
+            The cascade combines the declarations coming all these different sources and resolves conflicts between these sources and within each source themselves
+
+        The cascade resolves conflicts in order of:
+
+            Importance (weight) > Selector specificity > Source order of declarations
+
+        It starts by giving conflicting declarations different importances based on where they are declared (based on their source) - the order of importance is as follows
+
+            1. User !important declarations
+            2. Author !important declarations
+            3. Author declarations
+            4. User declarations
+            5. Default browser declarations
+
+        For all the selectors with the exact same importance, the cascade will compare and calculate the specificity of the declaration selectors - specificity is ordered as follows:
+
+            1. Inline styles
+            2. IDs
+            3. Classes, pseudo-classes, attribute selectors
+            4. Elements, pseudo-elements
+
+            The selector used is actually based on the totals for each of the above 4 categories - for example, if we have:
+
+                A. nav#nav div.pull-right .button { }
+                B. #nav a.button:hover { }
+
+            In terms of (Inline, IDs, Classes, Elements), A has (0, 1, 2, 2) and B has (0, 1, 2, 1), so A is actually used instead of B, because they have equal number of inline styles, IDs, and classes, but A selects 1 extra element compared to B - it is considered more specificity
+
+                But if A was (1, 1, 2, 2) and B was (0, 10000, 10000, 10000), A would still take presedence
+
+                Note that the universal selector * { } has no specificty value - it's (0, 0, 0, 0), so all other selectors have a presedence over it
+
+            The selector that wins is the cascaded values
+        
+        For all selectors that have the exact same specificity, the cascade just uses the last delcaration in the code to override all other declarations and it will be applied (last in source order is used)
+
+            But it's best to rely more on specificity than on the order of selectors
+
+            THE ONLY TIME YOU SHOULD RELY ON ORDER OF SELECTORS IS WHEN USING 3RD PARTY STYLESHEETS - ALWAYS PUT YOUR STYLESHEETS LAST SO THAT YOU CAN OVERWRITE THE OTHER STYLESHEETS
+
+        Note that when you have selector conflicts it's best to actually look into where the conflict lies and fix it rather than just marking a delcaration as !important to let it take prescedence, since it doesn't actually solve the problem (it's just an easy fix) and causes less maintainable code - use !important only as a last resort
+
+        An important implication is the following selectors:
+
+        A. #nav div.pull-right a.button { bg-color: green }
+        B. #nav a.button:hover { bg-color: yellow }
+
+            Since these are both selecting the same button and one has the :hover pseudo-class, we'd expect the button to turn yellow when we hover it - but it doesn'tage
+            
+            This is because B has a lower specificity than A, so no matter what happens, B will never be applied as a style to the button
+
+            To fix this, we need to force B to have a higher specificity than A - this way, CSS already knows that B should only be applied when the button is hovered, so when it is actually hovered, B will finally have a higher specificity and be applied over A:
+
+            B. #nav div.pull-right a.button:hover { bg-color: yellow }
+
+    Value processing
+
+        All length units (px, em, %, vw, vh, etc.) are always converted into px at the end of the day, through a series of steps, illustrated by the following example
+
+            <div class="section">
+                <p class="amazing">CSS is amazing</p>
+            </div>
+
+            .section {
+                font-size: 1.5rem;
+                width: 280px;
+                background-color: orangered;
+            }
+
+            p {
+                width: 140px;
+                background-color: green;
+            }
+
+            .amazing {
+                width: 66%;
+            }
+
+        With the above, to calculate the width of the paragraph, we compute the following sequence of values to finally arrive at the actual value used by the browser to display our elements (will elaborate on these steps soon):
+
+            1. Declared value (author declarations): 140px and 66%
+            2. Cascaded value (after cascade): 66%
+            3. Specified value (defaulted value if there is no cascaded value): 66%
+            4. Computed value (relative values such as rem are converted to absolute): 66% (% is not a relative unit, it's just a proportion) 
+            5. Used value (final calculations based on layout): 184.8px (66% of 280px, the parent width)
+            6. Actual value (rounded for browser): 185px
+
+        Also note that every CSS property needs to have a value regardless of if it's used or declared or not
+
+            This means that padding, for example, it has no browser default CSS for it and it's also not declared by the author, so it doesn't have a declared or cascaded value, it will have a specified value of 0px, which is also going to be the actual value since it's already in actual value units
+
+        For font-size of the SECTION (declared in terms of rem) in the CSS above, we have:
+
+            1. Declared value: 1.5rem
+            2. Cascaded value: 1.5rem
+            3. Specified value: 1.5rem
+            4. Computed value: 24px (rem is relative to the ROOT font size (different from a section of paragraph font-size), which is always declared as 16px, declared as a browser default - so we take 1.5 * 16px = 24px)
+            5. Used value: 24px
+            6. Actual value: 24px
+
+        For the font-size of the PARAGRAPH, it's not declared and has no browser default value (browser only declared default value for the root), but it exists because of inheretence
+
+            Some properties such as font-size inherent the computed value of their parents if it isn't declared itself, which saves us time in specifying, for example, font-size for every element
+
+        Converting relative units to px
+
+            %tages (not % is technically not a unit but may be treated as one)
+           
+                Defining sizes as a %tage means we want the size calculated relative to the parent's computed px values
+
+            Ems
+            
+                Defining a font-size using ems calculates font-size using the PARENT's computed font-size in px
+
+                Defining a length using ems calculates length using the CURRENT ELEMENT'S computed font-size in px
+
+            Rems (it's usually best to use for everything because we can adjust sizes using just the root font-size)
+
+                Defining a length OR font using rems calculates length AND font-size using the ROOT computed font-size
+
+                It's best partice to define the root font size (inside html { }) to be 10px because no we know 1rem is 10px, so we can easily convert between the two
+
+                    This is the best practice for minimizing calculations and having one global unit that we can change for responsive design
+
+            These units help us build responsive layouts because, by just changing a font-size, we can automatically change length
+
+    Inheretence
+
+        Firstly, remember that for every selector, each and every CSS property in existence must have a value, even if neither the developer nor the browser specifies it, so we need a systematic way of determining values for each property
+
+            When looking for a value to assign to a property, the first thing the CSS engine checks for is a cascaded value (which comes about if either the developer or browser defines a value for it)
+            
+                If a cascaded value exists (the developer or browser defined a value for this property in this selector), then we use this as the specified value -> end.
+
+                If there is no cascaded value, we look to see if the property can be inhereted - CSS specifies whether each property can actually be inhereted (some properties can never inheret values from anywhere) - usually properties related to text (font-family, font-size, ...) are inhereted, but properties like padding, margin, etc. are not (which makes sense)
+
+                    If the property can be inhereted, the specified value of that property is the computed value (not any relative value) of its PARENT element
+
+                    If the property cant be inhereted, the specified value must become the initial value, which is also specific to each property
+
+                We can actually use the inheret keyword to force the inheretence of a certain property, which can be useful
+
+                We can also use the initial keyword to reset a property back to its initial value
+
+The Website rendering phase
+
+    The CSS visual formatting model is an algorithm that calculates and determines the layout of these boxes,for each element in the render tree, in order to determine the final layout of the page
+
+        In order to do this, the algorithm takes into account factors like dimensions of the boxes from the box model, the box type (inline, block, inline-block), positioning scheme (floats and positioning), stacking contexts, other elements in the render tree (parents/siblings), viewportsize, dimension of images, and other factors - the browser takes all this info and decides how the final website should look for the user
+
+    CSS box types (defined by the display property)
+
+        All elements have a different default display property, such as block, inline, inline-block, etc. but we can manually change their display properties, which can be very useful
+
+            Block-level boxes (display: block or flex or list-item or table):
+
+                Content is formatted as blocks, so the box model applies directly to it
+                
+                This occupies 100% of its parent's width by default and creates line breaks before and after it, meaning that all blocks are formatted vertically one after another
+
+            Inline boxes (display: inline):
+
+                Content is distributed in lines, so the only the content area of the box model applies to it (it only occupies space that its content actually needs) - they usually just sit inside their block-level parent element
+
+                It has no height and width (can't define them since it's just the size of the content) and does not create line breaks 
+
+                Paddings and margins are only horizontal (left and right)
+
+            Inline-block box (display: inline-block):
+
+                This is a mix of block and inline, which only occupies the content's space and causes no line breaks
+
+                However, they work as a block-level box on the inside, so the box model still applies to them 
+
+        Positioning Schemes
+
+            Normal flow (position: relative): 
+
+                This is the default positioning scheme and is used when we the element isn't float or absolutely positioned
+
+                In this case, elements are simply laid out according to their source order
+
+            Floats (float: left OR float: right):
+
+                This removes the element completely from the normal flow and shifted to the left and right as far as possible, until it touches the edge of its containing box or another floated element 
+
+                When this happens, text and inline elements will wrap around the floated element
+
+                The container of the floated element will also NOT adjust its height to the element, which can be problematic - we can fix this using clear fixes
+
+            Absolute positioning (position: absolute OR fixed):
+
+                This also removes the completely from the normal flow, except here the element has no impact on surrounding content or elements at all, meaning it will just overlap other elements if they touch
+
+                We use top, bottom, left, and right to offset the element from its relatively positioned container
+
+                We can solve the overlapping issue using stacking context 
+
+        Stacking contexts
+
+            This acts as layers to form a stack and determines the order upon which elements are rendered on the page
+
+            The most common stacking context property is z-index (defalut is 0), where elements with higher z-index will be stacked on top of others
+
+            But we can also create other stacking contexts using properties like opacity and transform

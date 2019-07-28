@@ -1,0 +1,60 @@
+The best strategy for CSS architecture is the following
+
+1.Think -> 2.Build -> 3.Architect 
+
+1. Think about and draw up the layout of your web app before writing code
+
+    Use component driven design: divide our page into modular components which are held together by the overall layout of the page
+
+        Make sure components are re-usable across a project and also between different projects (could build your own library of components to use across different projects)
+
+    Components should also be independent so that we can use them completely on their own, regardless of where they are in the web app
+
+        Thus, components should not depend on their parents elements
+
+2. Build your layout in html and css with a consistent structure for naming classes
+
+    There are many ways of naming classes such as object-oriented CSS or S Max - but BEM (Block Element Modifier) is growing in popularity and we will use this
+
+    A Block is a standalone component that is meaningful on its own
+
+        This is basically any component that can be independent and reusable on its own - we can have nested blocks, this is perfectly acceptable
+
+    An element is a part of a block that has no meaning on its own
+
+        In other words, if we take an element out of its block, they wouldn't be useful anywhere else in our web app - they'd have no meaning
+    
+    A modifier is a modifier we can put on a block to make it different from the regular blocks or elements (like a specific version of that block or element) (eg. btn--round) 
+
+    The class names are .block__element--modifier { }, but we can also have just .block--modifier { } if we want to apply styles to give a specific version of that block (but it's not necessarily an element), such as className="recipe__btn btn .btn--round", in which case we can reuse the btn--round class for other buttons if we wanted 
+
+    This scheme is really good because it requires very low specificity in selectors because the naming creates the specificty for you
+
+    See react code of main heading section for an example with commented explanations
+
+3. Create a logical architecture for your css with files and folders
+
+    There are also many options for how this should be done like ITCSS or S Max, but we will use the 
+    7-1 Pattern, which has
+
+        7 different folders for partial Sass (or any other CSS pre-processor) files, which are:
+
+            base/   (for basic project definitions) 
+
+            components/    (one file for each component)
+
+            layout/    (styles for the overall layout of the web app)
+
+            pages/     (style for specific pages of the project)
+
+            themes/    (for different visual themes)
+
+            abstracts/    (code that doesn't output any CSS such as variables or mix-ins)
+
+            vendors/    (third-party css)
+
+        Of course we don't have to always use all of these folders, it just depends on the size and scope of the project
+
+        1 main Sass file to import all other files into a compiled CSS stylesheet
+
+    

@@ -15,11 +15,23 @@ Dark green: #28b485
 
 /* List classes based on the natural heirachy of the html elements */
 
-* {
+/* Not only have the universal selector, but also for all ::after and ::before pesudo-elements (scroll down for info on pseudo-elements), since these properties of the pesuedo-elements wouldn't have these important properties otherwise */
+*,
+*::after,
+*::before {
     margin: 0;
     padding: 0;
-    /* Prevent total width or height of boxes from including margins or padding (we want raw height/width) */
-    box-sizing: border-box;
+    /* The box-sizing property is not inhereted by default (see css theory), but we can force it to be inhereted like this - and now we will define box-sizing: border-box in the body selector (see body { }) and let all elements inherit this */
+    /* This is just better practice than defining box-sizing in the universal selector because defining it directly in the universal selector forces everything to have this box-sizing and will plugins and libraries will have their box-sizing overriden, but if we do it like this then the plugins can have their own box-sizing override our one */
+    box-sizing: inherit;
+}
+
+html {
+    /* Set the root font size to allow us to use rems for responsive design
+    We shouldn't use pixels here because this means everything is scaled relative to our pre-defined font-size, but some people prefer to change their browser's default font-size - our web app would not accomodate for this
+    So instead, we define root font-size based on a % of the browser's default, which is usually 16px, but if the user changes this we will also automatically adjust everything accordingly
+    */
+    font-size: 62.5%;
 }
 
 body {
@@ -27,11 +39,14 @@ body {
     /* Set fonts in body and not universal selector because fonts are inhereted by all the child elements of the body, which is more efficient than putting it in the universal selector */
     font-family: "Lato", sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    /* font-size: 16px; */
     line-height: 1.7; /* Line height of font is 1.7X bigger than the previously defined line height */
     color: #777;
     /* Padding to create white background around entire webpage (not inhereted) (makes webpage look like a card) */
-    padding: 30px;
+    padding: 3rem;
+    /* Let height and width of a box be defined for the entire box, including the padding and border, rather than just the content area - this also means that the extra paddings and borders we specify will reduce the size of the content area in order to keep the defined height and width constant (whereas by default height and width only define the height and width of the content area, and the total height is calculated by adding the extra padding and border sizes) - thus, in this case, the total width and height = specified width and height, 
+    whereas by default total width and height = specified width and height + padding + border */
+    box-sizing: border-box;
 }
 
 .header {
@@ -54,21 +69,21 @@ body {
 }
 
 /* Use the logo-box to POSITION the logo */
-.logo-box {
-    /* Position this box relative to its parent container */
+.header__logo-box {
+    /* Position this box relative to the first parent with the relative position property */
     position: absolute;
     /* Top, left, right, bottom places the image at the right place */
-    top: 40px;
-    left: 40px;
+    top: 4rem;
+    left: 4rem;
 }
 
 /* Use the logo to SIZE the logo */
-.logo {
+.header__logo {
     /* Only set the height of the logo, let the browser automatically specify the width accordingly */
-    height: 35px;
+    height: 3.5rem;
 }
 
-.text-box {
+.header__text-box {
     /* We want to center this box within the header */
     position: absolute;
     /* Top and left are relative to the upper left corner of the box, so this will put the upper left corner of the box exactly in the center of the container, center of the box itself not actually centered */
@@ -88,17 +103,17 @@ body {
     /* We're this entire heading-primary element moves a little bit during the animation of its children ( a little shaky) - nobody actually knows why this is, but if we hide the back part (the backface) of the element from the user it turns out that the shaking goes away - nobody knows why this fixes it either but it just works - make sure you put this onn the right element that's shaking */
     backface-visibility: hidden;
     /* Make space between the text and the button */
-    margin-bottom: 60px;
+    margin-bottom: 6rem;
 }
 
-.heading-primary-main {
+.heading-primary--main {
     /* Block elements occupy the entire width of their parent elements and create line breaks before and after them, unlike inline elements which just cram themselves next to each other on the same line - so block elements are perfect for heading-main and heading-sub since we need them on separate lines */
     display: block;
     /* Font options, some of which override default h1 options */
-    font-size: 60px;
+    font-size: 6rem;
     /* Note that we only have access to the font weights we loaded: 100, 300, 400,... */
     font-weight: 400;
-    letter-spacing: 35px;
+    letter-spacing: 3.5rem;
 
     /* Apply @keyframe animation named moveInLeft to this class and set duration (there are many other animation properties you can find on MDN for your purpose) */
     animation-name: moveInLeft;
@@ -107,11 +122,11 @@ body {
     animation-timing-function: ease-out;
 }
 
-.heading-primary-sub {
+.heading-primary--sub {
     display: block;
-    font-size: 20px;
+    font-size: 2rem;
     font-weight: 700;
-    letter-spacing: 17.4px;
+    letter-spacing: 1.74rem;
 
     /* Shortened property that includes all of the above animation properties (CSS will figure out what each one means) */
     animation: moveInRight 1s ease-out;
@@ -128,12 +143,12 @@ body {
         /* Let it fade in */
         opacity: 0;
         /* Animate it in the x direction relative to the class's specified position in the selectors - we start with negative so we can move in from the left */
-        transform: translateX(-100px)
+        transform: translateX(-10rem)
     }
 
     80% {
         /* Let it move too far to the left and then go back to original state at 100% to animate bouncing effect */
-        transform: translateX(10px);
+        transform: translateX(1rem);
     }
 
     100% {
@@ -146,11 +161,11 @@ body {
 @keyframes moveInRight {
     0% {
         opacity: 0;
-        transform: translateX(100px)
+        transform: translateX(10rem)
     }
 
     80% {
-        transform: translateX(-10px);
+        transform: translateX(-1rem);
     }
 
     100% {
@@ -158,6 +173,25 @@ body {
         transform: translate(0);
     }
 }
+
+@keyframes moveInButton {
+    0% {
+        opacity: 0;
+        transform: translateY(10rem)
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(0);
+    }
+}
+
+/* Pseudo-selectors
+    There are 2 types of psuedo-selectors, pseudo-classes and psuedo-elements
+    Pseudo-classes are virtual classes that are created when the element of the class enters a certain state,such as being visited (:visited) or hovered (:hovered)
+
+    Pseudo-elements are virtual elements that are added to the DOM by the CSS but aren't in the actual DOM tree, because they're just used for styling (hence why they're dealt with in CSS) - if you define a pseudo-element such as .btn::after (see below), then a new 'after' psuedo-element will be created and rendered to the DOM as the last CHILD of the actual element (.btn::after will be the last child of .btn) according to its specified style
+*/
 
 /* :link is a link pseudo-class, which is a special state of a selector (eg. :hover) - in this case, :link is the state of the btn class (pseudo-class) when the btn class belongs to an <a> element */
 /* Everything below applies to both btn:link and btn:visited, ensuring it's always the same */
@@ -167,35 +201,83 @@ body {
     text-decoration: none; /* Remove all underlining and blueing of links */
     /* Padding is needed for buttons (especially <a> buttons) because or else the background color will just be applied as a highlight over some text - the padding creates the fatness of the button */
     /* We use padding because it's inside the border of the box, so it lets us increase the size of the background, whereas margin is outside the border and won't affect the size (only position) */
-    padding: 15px 40px;
+    padding: 1.5rem 4rem;
     /* ALWAYS do this when we want to give padding or height/width to elements because it prevents it from being an inline element (basically text) - this lets the box model treat it as a regular block element (so it takes up new lines rather than overlaps with things above or below it) - but since it's inline-block and not block, it doesn't take up its own width, it lets other blocks coexist on that width */
     display: inline-block;
     /* Round out the edges */
-    border-radius: 100px;
+    border-radius: 10rem;
     /* Specifies which properties we enable to be animated (if we're not sure, just put all) */
     /* Transition property much be on the initial state and controls the way each of the transform properties are animated (instead of being instant, we can delay them) */
     transition: all 0.2s;
+
+    /* The btn::after pseudo-element we defined (a child of this button) relies on absolute positioning to position itself directly behind this button, so this button needs to be relative positioning */
+    position: relative;
+
+    font-size: 1.6rem;
 }
 
 .btn:hover {
     /* Make button move up on hover (the y axis increases downward, so moving up means moving -vely) - the translation is in relation to the initial state (btn:link) */
-    transform: translateY(-3px);
+    transform: translateY(-0.3rem);
     /* Add a shadow when we hover so it looks like the button is moving up - the arguments are:
     x-direction, y-direction, blur, color (rgba, where the last value is opacity, allowing us to make it more subtle (not a giant black thing) */
     /* We want more blur here because the button should be at the highest point - we don't want horizontal shadows since the button is moving up */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
 }
 
 /* When clicked */
 .btn:active {
     /* Make button move up on click - translation is also in relation to INITIAL state, NOT hover state, and since we made hover -3px, once we hover and then click, we'd go down to -1px, so the button gets pressed DOWN since we move from -3px relative to initial state to -1px relative to initial state */
-    transform: translateY(-1px);
+    transform: translateY(-0.1rem);
     /* Less y-direction shadow and less blur here since button is closer */
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
 }
 
-.btn-white {
+.btn--white {
     background-color: #fff;
     color: #777;
+}
 
+
+/* Make the .btn::after pseudo-element - our goal is to make it so that when we hover onto the button, this hidden pseudo-element will stay behind the actual button but then pop out to make an effect, and then once we hover out it dissapears behind the button again*/
+.btn::after {
+    /* To appear on the page, psuedo-elements need both a content and display property regardless of if it's blank or not */
+    content: "";
+    display: inline-block;
+    /* Since the pseudo-element is treated as a child of the main one, we want the height and width to be 100% of the original button */
+    height: 100%;
+    width: 100%;
+    border-radius: 100px;
+
+    /* Make it absolute so that position is relative to the real button (since it's treated as a child of it, and move it to the exact same position as the actual button (top and left as 0) */
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    /* Places this psuedo-element behind the actual button */
+    z-index: -1;
+
+    /* Animate this pseudo-element since it's the initial state */
+    transition: all 0.4s;
+}
+
+/* Since any element with btn-white already has a btn class, we don't need to respecify the mandatory properties of pseudo-elements */
+.btn--white::after {
+    background-color: #fff
+}
+
+/* Apply this style to the ::after pseudo-element when the actual button is being hovered */
+.btn:hover::after {
+    /* Let the pseudo-element grow and fade out on hover (scale it more in the y direction because the button is moving up so we want the scaling to accomodate for this) */
+    transform: scaleX(1.4) scaleY(1.7);
+    opacity: 0;
+}
+
+/* Apply a special class for the homepage button to let it hover in, but don't do this for other buttons */
+.btn--fade-in {
+    /* Last argument is the delay before the animation begins - we choose 0.75s because the other animations take 1s and we want it to come in a little later */
+    animation: moveInButton 0.5s ease-out 0.75s;
+
+    /* Without this, since we specified a delay, the button will be displayed in its regular before the animation starts and then itll teleport down and fade into its original spot, which looks really weird - in order to make it not exist before the animation starts, we need to apply this, which applies the 0% styles in the @keyframe even before the animation starts */
+    animation-fill-mode: backwards;
 }

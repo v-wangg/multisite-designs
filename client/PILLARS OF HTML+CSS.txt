@@ -1,0 +1,33 @@
+Responsive Design
+
+    Fluid Layouts
+    
+    Media queries
+
+    Responsive images
+
+    Correct units
+
+    Desktop-first vs. Mobile-first strategy
+
+Maintainability and Scalability
+
+    Clean and easy to understand
+
+    Reusable units
+
+    Well organized files 
+
+    Well named classes
+
+    Well structured html
+
+Web Performance
+
+    Less HTTP requests
+
+    Less code, compressed code
+
+    Use a CSS preprocessor like Sass
+
+    Less images, compress images (biggest factor)
